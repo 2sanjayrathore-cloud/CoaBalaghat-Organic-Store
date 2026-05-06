@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Organic Commerce Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{
+      --bg:#f5f8f3;--card:#ffffff;--text:#16301c;--muted:#577064;--line:#dce8d8;
+      --green:#2f7d32;--green2:#4d9b48;--gold:#c58b1c;--red:#c2443a;--shadow:0 16px 40px rgba(23,47,31,.08);
+      --radius:24px;--radius2:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#edf6e8,#f7fbf4 14%,#eff6ec 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    body{min-height:100vh}
+    .shell{max-width:1400px;margin:0 auto;padding:18px}
+    .topbar{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);background:rgba(247,251,244,.82);border:1px solid rgba(220,232,216,.8);box-shadow:0 10px 25px rgba(0,0,0,.04);border-radius:22px;padding:14px 16px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{width:48px;height:48px;border-radius:16px;background:radial-gradient(circle at 30% 30%,#8fd36f,#2f7d32);display:grid;place-items:center;color:#fff;font-size:24px;box-shadow:0 10px 20px rgba(47,125,50,.28)}
+    .brand h1{margin:0;font-size:18px;line-height:1.1}
+    .brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+    .btn{border:0;border-radius:14px;padding:11px 14px;background:#eef5e8;color:var(--text);font-weight:700;cursor:pointer;transition:.18s transform,.18s box-shadow,.18s opacity;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff}
+    .btn.warn{background:linear-gradient(135deg,#d39b1f,#f0bb3c);color:#fff}
+    .btn.ghost{background:#fff;border:1px solid var(--line)}
+    .btn.danger{background:linear-gradient(135deg,#c2412f,#e26c52);color:#fff}
+    .btn.small{padding:8px 11px;font-size:13px;border-radius:12px}
+    .grid{display:grid;gap:16px}
+    .hero{grid-template-columns:1.2fr .8fr;align-items:stretch;margin-top:18px}
+    .card{background:rgba(255,255,255,.88);border:1px solid rgba(220,232,216,.85);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .hero h2{margin:8px 0 10px;font-size:clamp(28px,4vw,54px);line-height:1.02}
+    .hero .lead{font-size:16px;line-height:1.7;color:#3f5a4c;max-width:62ch}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#edf7ea;border:1px solid #d7e8d1;border-radius:999px;font-size:12px;font-weight:700;color:#285c33}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+    .stat{background:linear-gradient(180deg,#fff,#f3f8f0);border:1px solid var(--line);padding:14px;border-radius:18px}
+    .stat b{display:block;font-size:24px}
+    .stat span{color:var(--muted);font-size:12px}
+    .sidebar{display:grid;gap:12px}
+    .hero-panel{display:grid;gap:12px}
+    .mini{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .chip{padding:6px 10px;border-radius:999px;background:#eef5e8;color:#2b6430;font-size:12px;font-weight:700}
+    .navtabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+    .navtabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:700}
+    .navtabs button.active{background:var(--green);border-color:var(--green);color:#fff}
+    .section{margin-top:16px}
+    .section h3{margin:0 0 12px;font-size:22px}
+    .sub{color:var(--muted);font-size:13px}
+    .products{grid-template-columns:repeat(4,1fr)}
+    .prod{display:flex;flex-direction:column;gap:10px}
+    .prod .art{height:84px;border-radius:18px;background:linear-gradient(135deg,#f7fbf4,#e7f2df);display:flex;align-items:center;justify-content:center;font-size:40px}
+    .prod h4{margin:0;font-size:17px}
+    .prod p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .field{display:grid;gap:6px;margin-bottom:12px}
+    .field label{font-size:12px;font-weight:800;color:#385543}
+    .field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;font:inherit;outline:none}
+    .field textarea{min-height:96px;resize:vertical}
+    .table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}
+    .table th,.table td{padding:10px 12px;border-bottom:1px solid #edf2ea;text-align:left;font-size:13px}
+    .table th{background:#f4f9f1}
+    .table tr:last-child td{border-bottom:0}
+    .muted{color:var(--muted)}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .kpi .card{padding:16px}
+    .kpi b{font-size:24px;display:block}
+    .kpi span{color:var(--muted);font-size:12px}
+    .overlay{position:fixed;inset:0;background:rgba(12,23,14,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:80}
+    .overlay.show{display:flex}
+    .modal{max-width:980px;width:100%;max-height:92vh;overflow:auto;background:#fff;border-radius:28px;box-shadow:0 25px 80px rgba(0,0,0,.25);padding:18px}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+    .title{margin:0;font-size:24px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .tabs button{padding:10px 12px;border:1px solid var(--line);background:#fff;border-radius:14px;font-weight:700;cursor:pointer}
+    .tabs button.active{background:var(--green);border-color:var(--green);color:#fff}
+    .toast{position:fixed;right:18px;bottom:18px;background:#16301c;color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.18);z-index:120}
+    .footer{padding:18px 0 8px;color:var(--muted);font-size:13px}
+    .invoice{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:24px;border:1px solid var(--line)}
+    .hide{display:none !important}
+    @media (max-width:1100px){.hero,.products,.split,.kpi,.stats{grid-template-columns:1fr 1fr}}
+    @media (max-width:720px){
+      .topbar,.mini,.actions{flex-direction:column;align-items:stretch}
+      .hero,.products,.split,.kpi,.stats{grid-template-columns:1fr}
+      .shell{padding:12px}
+      .brand h1{font-size:17px}
+      .modal{padding:14px}
+    }
+    .chartbox{height:280px}
+    .scan{background:#f4faf1;border:1px dashed #cfe0c7;border-radius:18px;padding:14px}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">🌿</div>
+        <div style="min-width:0">
+          <h1 id="brandName">Organic Commerce Hub</h1>
+          <p id="brandTag">College of Agriculture, Balaghat • Student-run organic inputs</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn small ghost" onclick="setLang('en')">EN</button>
+        <button class="btn small ghost" onclick="setLang('hi')">हिंदी</button>
+        <button class="btn small ghost" onclick="openDrawer('help')">❓ Help</button>
+        <button class="btn small ghost" onclick="openDrawer('ai')">🧠 AI Doctor</button>
+        <button class="btn small ghost" onclick="openDrawer('sales')">🏷️ Student Sales</button>
+        <button class="btn small primary" onclick="openDrawer('dashboard')">📊 Dashboard</button>
+        <button class="btn small warn" onclick="openDrawer('admin')">🔐 Admin</button>
+      </div>
+    </div>
+
+    <div class="grid hero">
+      <div class="card">
+        <span class="pill" id="heroPill">🧪 Built on Google Sheets + Apps Script</span>
+        <h2 id="heroTitle">A complete organic sales system for the college unit.</h2>
+        <p class="lead" id="heroLead">Sell earthworms, vermicompost, vermiwash, biofertilizers, botanical extracts, seed treatments, and panchgavya with instant billing, automated records, buyer notifications, student-only sales entry, dashboard analytics, and editable pricing.</p>
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" onclick="openDrawer('shop')">🛒 Open Shop</button>
+          <button class="btn ghost" onclick="openDrawer('order')">🧾 New Order</button>
+          <button class="btn ghost" onclick="openDrawer('ai')">🧠 Diagnose Crop</button>
+          <button class="btn ghost" onclick="openDrawer('link')">🔗 Share Link & QR</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="kpiProducts">0</b><span id="tProducts">Products</span></div>
+          <div class="stat"><b id="kpiOrders">0</b><span id="tOrders">Orders</span></div>
+          <div class="stat"><b id="kpiRevenue">₹0</b><span id="tRevenue">Revenue</span></div>
+          <div class="stat"><b id="kpiCash">₹0</b><span id="tCash">Cash in hand</span></div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="card hero-panel">
+          <div class="mini">
+            <div>
+              <div class="sub">Quick controls</div>
+              <h3 style="margin:4px 0 0">Edit from one place</h3>
+            </div>
+            <span class="chip">Google-powered</span>
+          </div>
+          <div class="row">
+            <button class="btn ghost" onclick="openDrawer('products')">🧺 Products</button>
+            <button class="btn ghost" onclick="openDrawer('expenses')">💸 Expenses</button>
+            <button class="btn ghost" onclick="openDrawer('staff')">👩‍🎓 Staff Codes</button>
+            <button class="btn ghost" onclick="openDrawer('settings')">⚙️ Settings</button>
+          </div>
+          <div class="scan">
+            <div style="font-weight:800;margin-bottom:6px">What this system does</div>
+            <div class="sub" id="systemBullets">• Public shopping<br>• Student-only sales entry<br>• Auto invoice PDF<br>• Email alerts<br>• Optional WhatsApp/SMS hooks<br>• Live dashboard<br>• Loyalty points<br>• Hindi / English mode</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sub">Top product</div>
+          <h3 id="topProduct">—</h3>
+          <p class="sub">Updated automatically from sheet activity.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="mini" style="margin-bottom:10px">
+        <div>
+          <h3 style="margin:0">Catalog</h3>
+          <div class="sub">Editable prices and live stock</div>
+        </div>
+        <div class="row">
+          <input id="searchBox" placeholder="Search products..." oninput="renderProducts()" style="padding:12px 14px;border:1px solid var(--line);border-radius:14px;min-width:240px">
+          <select id="catFilter" onchange="renderProducts()" style="padding:12px 14px;border:1px solid var(--line);border-radius:14px"></select>
+        </div>
+      </div>
+      <div id="productGrid" class="grid products"></div>
+    </div>
+
+    <div class="grid split section">
+      <div class="card">
+        <div class="mini">
+          <div><h3 style="margin:0">Sales chart</h3><div class="sub">Monthly revenue trend</div></div>
+          <button class="btn small ghost" onclick="refreshDashboard()">↻ Refresh</button>
+        </div>
+        <div class="chartbox"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="mini">
+          <div><h3 style="margin:0">Shareable access</h3><div class="sub">Publish once, then share link + QR</div></div>
+        </div>
+        <div class="field">
+          <label>Your web app URL</label>
+          <input id="shareUrl" readonly placeholder="Will appear after deploy">
+        </div>
+        <div class="row">
+          <button class="btn primary" onclick="copyShareLink()">Copy Link</button>
+          <button class="btn ghost" onclick="makeQr()">Generate QR</button>
+        </div>
+        <div id="qrBox" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div class="footer">© <span id="year"></span> College of Agriculture, Balaghat • Organic Commerce Hub</div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="closeOverlay(event)">
+    <div class="modal" id="modal" onclick="event.stopPropagation()"></div>
+  </div>
+
+<script>
+let BOOT = null;
+let PRODUCTS = [];
+let STATE = { lang: localStorage.getItem('lang') || 'en', adminToken: localStorage.getItem('adminToken') || '', staffToken: localStorage.getItem('staffToken') || '', cart: JSON.parse(localStorage.getItem('cart') || '[]') };
+let CHART = null;
+let CURRENT = { drawer: '', order: null };
+
+const T = {
+  en: {
+    heroTitle: 'A complete organic sales system for the college unit.',
+    heroLead: 'Sell earthworms, vermicompost, vermiwash, biofertilizers, botanical extracts, seed treatments, and panchgavya with instant billing, automated records, buyer notifications, student-only sales entry, dashboard analytics, and editable pricing.',
+    tProducts: 'Products', tOrders: 'Orders', tRevenue: 'Revenue', tCash: 'Cash in hand',
+    share: 'Share Link', catalog: 'Catalog', search: 'Search products...', topProduct: 'Top product',
+    productsLabel: 'Products', ordersLabel: 'Orders', dashboardLabel: 'Dashboard', adminLabel: 'Admin'
+  },
+  hi: {
+    heroTitle: 'कॉलेज यूनिट के लिए एक पूरा ऑर्गेनिक बिक्री सिस्टम।',
+    heroLead: 'Earthworm, vermicompost, vermiwash, biofertilizers, botanical extracts, seed treatments और panchgavya को instant billing, automatic record, buyer notification, student-only sales entry, dashboard analytics और editable pricing के साथ बेचें।',
+    tProducts: 'उत्पाद', tOrders: 'ऑर्डर', tRevenue: 'आय', tCash: 'हाथ में पैसा',
+    share: 'लिंक साझा करें', catalog: 'कैटलॉग', search: 'उत्पाद खोजें...', topProduct: 'सबसे अधिक बिकने वाला',
+    productsLabel: 'उत्पाद', ordersLabel: 'ऑर्डर', dashboardLabel: 'डैशबोर्ड', adminLabel: 'एडमिन'
+  }
+};
+
+function money(n){ return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+
+function boot() {
+  google.script.run.withSuccessHandler(data => {
+    BOOT = data;
+    PRODUCTS = data.products || [];
+    document.getElementById('shareUrl').value = data.links?.sheetUrl || '';
+    document.getElementById('brandName').textContent = data.app?.college || 'Organic Commerce Hub';
+    document.getElementById('brandTag').textContent = `${data.app?.college || ''} • Student-run organic inputs`;
+    document.getElementById('kpiProducts').textContent = data.publicStats?.productsCount || PRODUCTS.length;
+    document.getElementById('kpiOrders').textContent = data.publicStats?.ordersCount || 0;
+    document.getElementById('kpiRevenue').textContent = money(data.publicStats?.revenue || 0);
+    document.getElementById('kpiCash').textContent = money(data.publicStats?.cashInHand || 0);
+    document.getElementById('topProduct').textContent = data.dashboard?.topProduct?.name ? `${data.dashboard.topProduct.name} (${data.dashboard.topProduct.qty})` : '—';
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('heroTitle').textContent = T[STATE.lang].heroTitle;
+    document.getElementById('heroLead').textContent = T[STATE.lang].heroLead;
+    document.getElementById('tProducts').textContent = T[STATE.lang].tProducts;
+    document.getElementById('tOrders').textContent = T[STATE.lang].tOrders;
+    document.getElementById('tRevenue').textContent = T[STATE.lang].tRevenue;
+    document.getElementById('tCash').textContent = T[STATE.lang].tCash;
+    fillCategories();
+    renderProducts();
+    renderChart(data.dashboard?.monthly || []);
+    if (STATE.cart.length) localStorage.setItem('cart', JSON.stringify(STATE.cart));
+  }).apiBootstrap();
+}
+function setLang(lang){
+  STATE.lang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('heroTitle').textContent = T[lang].heroTitle;
+  document.getElementById('heroLead').textContent = T[lang].heroLead;
+  document.getElementById('searchBox').placeholder = T[lang].search;
+  renderProducts();
+}
+function fillCategories(){
+  const cats = ['All', ...new Set(PRODUCTS.map(p => p.category || 'Other'))];
+  const sel = document.getElementById('catFilter');
+  sel.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+}
+function renderProducts(){
+  const q = (document.getElementById('searchBox').value || '').toLowerCase();
+  const cat = document.getElementById('catFilter').value || 'All';
+  const list = PRODUCTS.filter(p => {
+    const text = `${p.nameEn} ${p.nameHi} ${p.category} ${p.description} ${p.sku}`.toLowerCase();
+    return (!q || text.includes(q)) && (cat === 'All' || p.category === cat);
+  });
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = list.map(p => `
+    <div class="card prod">
+      <div class="art">${escapeHtml(p.image || '🌿')}</div>
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <h4>${escapeHtml(STATE.lang === 'hi' ? p.nameHi || p.nameEn : p.nameEn)}</h4>
+          <div class="sub">${escapeHtml(p.category)} • ${escapeHtml(p.unit)}</div>
+        </div>
+        <span class="chip">${money(p.price)}</span>
+      </div>
+      <p>${escapeHtml(p.description || '')}</p>
+      <div class="row">
+        <button class="btn small primary" onclick='addToCart(${JSON.stringify(p)})'>Add to cart</button>
+        <button class="btn small ghost" onclick='quickOrder(${JSON.stringify(p)})'>Buy now</button>
+      </div>
+    </div>
+  `).join('') || `<div class="muted">No products found.</div>`;
+}
+function addToCart(product){
+  const existing = STATE.cart.find(x => x.sku === product.sku);
+  if (existing) existing.qty += 1;
+  else STATE.cart.push({ sku: product.sku, name: product.nameEn, qty: 1, price: product.price, unit: product.unit });
+  localStorage.setItem('cart', JSON.stringify(STATE.cart));
+  toast(`${product.nameEn} added`);
+}
+function quickOrder(product){
+  STATE.cart = [{ sku: product.sku, name: product.nameEn, qty: 1, price: product.price, unit: product.unit }];
+  localStorage.setItem('cart', JSON.stringify(STATE.cart));
+  openDrawer('order');
+}
+function openDrawer(type){
+  CURRENT.drawer = type;
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById('modal');
+  if(type === 'help') modal.innerHTML = helpHTML();
+  if(type === 'shop') modal.innerHTML = cartHTML('shop');
+  if(type === 'order') modal.innerHTML = cartHTML('order');
+  if(type === 'sales') modal.innerHTML = salesHTML();
+  if(type === 'dashboard') modal.innerHTML = dashboardHTML();
+  if(type === 'admin') modal.innerHTML = adminHTML();
+  if(type === 'ai') modal.innerHTML = aiHTML();
+  if(type === 'link') modal.innerHTML = linkHTML();
+  if(type === 'products') modal.innerHTML = productsAdminHTML();
+  if(type === 'expenses') modal.innerHTML = expensesHTML();
+  if(type === 'staff') modal.innerHTML = staffHTML();
+  if(type === 'settings') modal.innerHTML = settingsHTML();
+  overlay.classList.add('show');
+  if(type === 'dashboard') setTimeout(() => renderChart((BOOT?.dashboard?.monthly) || []), 100);
+}
+function closeOverlay(e){
+  if(e.target.id === 'overlay') document.getElementById('overlay').classList.remove('show');
+}
+function helpHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">Help</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <h4>How to use</h4>
+        <ol class="sub">
+          <li>Deploy the Apps Script web app.</li>
+          <li>Open the share link from the dashboard.</li>
+          <li>Login as admin using your PIN to edit products, settings, expenses, and staff codes.</li>
+          <li>Use the student code only on the Student Sales form.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h4>Important</h4>
+        <p class="sub">Email works directly with GmailApp. WhatsApp/SMS need provider API keys. UPI auto-verification needs a payment gateway webhook or manual approval.</p>
+      </div>
+    </div>`;
+}
+function cartHTML(mode){
+  const subtotal = STATE.cart.reduce((s,i)=>s + Number(i.qty)*Number(i.price), 0);
+  return `
+    <div class="modal-head">
+      <h3 class="title">${mode === 'order' ? 'New Order' : 'Cart'}</h3>
+      <button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button>
+    </div>
+    <div class="grid split">
+      <div class="card">
+        <div class="sub">Selected items</div>
+        <table class="table">${STATE.cart.map((i,idx)=>`<tr><td>${escapeHtml(i.name)}</td><td><input type="number" min="1" value="${i.qty}" style="width:80px" onchange="updateQty(${idx}, this.value)"></td><td>${money(i.price)}</td><td>${money(Number(i.qty)*Number(i.price))}</td><td><button class="btn small danger" onclick="removeItem(${idx})">Remove</button></td></tr>`).join('') || '<tr><td>No items</td></tr>'}</table>
+        <div style="margin-top:12px;font-weight:800">Subtotal: ${money(subtotal)}</div>
+      </div>
+      <div class="card">
+        <h4>Buyer details</h4>
+        <div class="field"><label>Name</label><input id="o_name"></div>
+        <div class="field"><label>Phone</label><input id="o_phone"></div>
+        <div class="field"><label>Email</label><input id="o_email"></div>
+        <div class="field"><label>Address</label><textarea id="o_address"></textarea></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>City</label><input id="o_city"></div>
+          <div class="field"><label>State</label><input id="o_state" value="Madhya Pradesh"></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Payment Mode</label><select id="o_payment"><option>UPI</option><option>Cash</option><option>Bank Transfer</option></select></div>
+          <div class="field"><label>Transaction Ref</label><input id="o_ref" placeholder="UTR / UPI ref"></div>
+        </div>
+        <div class="field"><label>Notes</label><textarea id="o_notes"></textarea></div>
+        <div class="row">
+          <button class="btn primary" onclick="submitOrder()">Submit & Save</button>
+          <button class="btn ghost" onclick="downloadPdfPreview()">Download PDF</button>
+          <button class="btn ghost" onclick="openDrawer('link')">UPI QR</button>
+        </div>
+        <div class="sub" style="margin-top:8px">After submit, the form clears automatically and confirmation is shown.</div>
+      </div>
+    </div>`;
+}
+function salesHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">Student Sales Entry</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Student code</label><input id="s_code" placeholder="STU-2022-A"></div>
+        <button class="btn primary" onclick="loginStudent()">Login student</button>
+        <div id="studentStatus" class="sub" style="margin-top:10px">Only selected students can save sales.</div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+        <div class="field"><label>Product</label><select id="s_product" onchange="fillPrice()">${PRODUCTS.map(p=>`<option value="${escapeHtml(p.sku)}">${escapeHtml(p.nameEn)}</option>`).join('')}</select></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Qty</label><input id="s_qty" type="number" value="1" min="1"></div>
+          <div class="field"><label>Unit price</label><input id="s_price" type="number"></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Buyer name</label><input id="s_buyer"></div>
+          <div class="field"><label>Buyer phone</label><input id="s_phone"></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Buyer email</label><input id="s_email"></div>
+          <div class="field"><label>Payment mode</label><select id="s_payment"><option>Cash</option><option>UPI</option></select></div>
+        </div>
+        <div class="field"><label>Transaction Ref</label><input id="s_ref"></div>
+        <div class="field"><label>Notes</label><textarea id="s_notes"></textarea></div>
+        <button class="btn warn" onclick="submitStudentSale()">Save sale</button>
+      </div>
+      <div class="card">
+        <h4>Fast sale guide</h4>
+        <ul class="sub">
+          <li>Student code is required.</li>
+          <li>Price auto-fills from the catalog.</li>
+          <li>Details save instantly to Google Sheet.</li>
+          <li>Admin receives email alert automatically.</li>
+        </ul>
+        <div class="scan">
+          <div style="font-weight:800;margin-bottom:6px">Available student codes</div>
+          <div class="sub">Manage them from Admin → Staff Codes.</div>
+        </div>
+      </div>
+    </div>`;
+}
+function dashboardHTML(){
+  const d = BOOT?.dashboard || {};
+  return `
+    <div class="modal-head"><h3 class="title">Dashboard</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="kpi">
+      <div class="card"><b>${money(d.revenue||0)}</b><span>Revenue</span></div>
+      <div class="card"><b>${money(d.expenseTotal||0)}</b><span>Expenses</span></div>
+      <div class="card"><b>${money(d.cashInHand||0)}</b><span>Cash in hand</span></div>
+      <div class="card"><b>${d.customersCount || 0}</b><span>Customers</span></div>
+    </div>
+    <div class="grid split section">
+      <div class="card"><h4>Monthly revenue</h4><div class="chartbox"><canvas id="dashChart"></canvas></div></div>
+      <div class="card">
+        <h4>AI sales forecast</h4>
+        <div class="sub">Heuristic forecast based on recent months.</div>
+        <div style="font-size:32px;font-weight:900;margin-top:10px">${money(forecastRevenue(d.monthly||[]))}</div>
+        <div class="sub">Next month estimate</div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <div class="sub">Top product</div>
+        <div style="font-size:20px;font-weight:800">${escapeHtml(d.topProduct?.name || '—')}</div>
+      </div>
+    </div>
+    <div class="card section">
+      <h4>Recent activity</h4>
+      <table class="table">
+        ${(d.recentOrders||[]).slice(0,6).map(o=>`<tr><td>Order</td><td>${escapeHtml(o.invoiceNo)}</td><td>${escapeHtml(o.customer.name)}</td><td>${money(o.grandTotal)}</td></tr>`).join('')}
+        ${(d.recentSales||[]).slice(0,6).map(s=>`<tr><td>Sale</td><td>${escapeHtml(s.saleNo)}</td><td>${escapeHtml(s.buyerName || s.studentName)}</td><td>${money(s.subtotal)}</td></tr>`).join('')}
+      </table>
+    </div>`;
+}
+function adminHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">Admin Login</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Admin PIN</label><input id="adminPin" type="password" placeholder="Enter PIN"></div>
+        <button class="btn primary" onclick="loginAdmin()">Login</button>
+        <div id="adminStatus" class="sub" style="margin-top:10px">After login, you can edit products, settings, expenses, and staff codes.</div>
+      </div>
+      <div class="card">
+        <h4>Security notes</h4>
+        <div class="sub">Change your admin PIN in Settings. For stronger protection, use a separate Google Workspace account and a long PIN.</div>
+      </div>
+    </div>
+    <div id="adminArea" class="hide section"></div>`;
+}
+function productsAdminHTML(){
+  const rows = PRODUCTS.map(p=>`
+    <tr>
+      <td>${escapeHtml(p.sku)}</td>
+      <td>${escapeHtml(p.nameEn)}</td>
+      <td>${escapeHtml(p.category)}</td>
+      <td><input value="${p.price}" style="width:90px" id="price_${escapeHtml(p.sku)}"></td>
+      <td><input value="${p.stock}" style="width:90px" id="stock_${escapeHtml(p.sku)}"></td>
+      <td><button class="btn small primary" onclick="saveProduct('${escapeHtml(p.sku)}')">Save</button></td>
+    </tr>`).join('');
+  return `
+    <div class="modal-head"><h3 class="title">Products</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="card">
+      <div class="sub">Edit product names, prices, and stock. Saved directly to Google Sheet.</div>
+      <table class="table">
+        <tr><th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr>
+        ${rows}
+      </table>
+    </div>`;
+}
+function expensesHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">Expenses</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Category</label><input id="e_cat" placeholder="Transport / Packaging / Labour"></div>
+        <div class="field"><label>Amount</label><input id="e_amt" type="number"></div>
+        <div class="field"><label>Paid To</label><input id="e_to"></div>
+        <div class="field"><label>Purpose</label><textarea id="e_purpose"></textarea></div>
+        <div class="field"><label>Payment Mode</label><select id="e_mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option></select></div>
+        <button class="btn primary" onclick="saveExpense()">Save expense</button>
+      </div>
+      <div class="card">
+        <h4>Expense control</h4>
+        <div class="sub">Expenses automatically reduce cash in hand in the dashboard.</div>
+      </div>
+    </div>`;
+}
+function staffHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">Student Access Codes</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Code</label><input id="st_code"></div>
+        <div class="field"><label>Name</label><input id="st_name"></div>
+        <div class="field"><label>Role</label><input id="st_role" value="Sales Entry"></div>
+        <div class="field"><label>Notes</label><textarea id="st_notes"></textarea></div>
+        <label><input id="st_allowed" type="checkbox" checked> Allowed</label><br><br>
+        <button class="btn primary" onclick="saveStaff()">Save staff code</button>
+      </div>
+      <div class="card">
+        <h4>How it works</h4>
+        <div class="sub">Only codes saved here can open the student sales form and submit a sale.</div>
+      </div>
+    </div>`;
+}
+function settingsHTML(){
+  const s = BOOT?.settings || {};
+  return `
+    <div class="modal-head"><h3 class="title">Settings</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Admin Email</label><input id="set_adminEmail" value="${escapeHtml(s.adminEmail || '')}"></div>
+        <div class="field"><label>Admin Phone</label><input id="set_adminPhone" value="${escapeHtml(s.adminPhone || '')}"></div>
+        <div class="field"><label>UPI ID</label><input id="set_upiId" value="${escapeHtml(s.upiId || '')}"></div>
+        <div class="field"><label>Admin PIN</label><input id="set_adminPin" type="password" placeholder="New PIN"></div>
+        <div class="field"><label>WhatsApp API URL</label><input id="set_waUrl"></div>
+        <div class="field"><label>WhatsApp Token</label><input id="set_waToken"></div>
+        <div class="field"><label>SMS API URL</label><input id="set_smsUrl"></div>
+        <div class="field"><label>SMS Token</label><input id="set_smsToken"></div>
+        <button class="btn primary" onclick="saveSettings()">Save settings</button>
+      </div>
+      <div class="card">
+        <h4>Automation</h4>
+        <div class="sub">Email works immediately. WhatsApp and SMS need provider credentials. UPI QR can be generated from the UPI ID field.</div>
+      </div>
+    </div>`;
+}
+function linkHTML(){
+  const url = document.getElementById('shareUrl').value || '';
+  return `
+    <div class="modal-head"><h3 class="title">Share link & QR</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="card">
+      <div class="field"><label>Web App URL</label><input id="shareInput" value="${escapeHtml(url)}"></div>
+      <div class="row">
+        <button class="btn primary" onclick="copyShareLink()">Copy link</button>
+        <button class="btn ghost" onclick="makeQr()">Generate QR</button>
+      </div>
+      <div id="qrBox2" style="margin-top:16px"></div>
+      <div class="sub" style="margin-top:10px">After deployment, paste the published web app URL here or use the one shown on screen.</div>
+    </div>`;
+}
+function aiHTML(){
+  return `
+    <div class="modal-head"><h3 class="title">AI Crop Doctor</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div class="grid split">
+      <div class="card">
+        <div class="field"><label>Crop</label><select id="ai_crop"><option>Rice</option><option>Wheat</option><option>Cotton</option><option>Soybean</option><option>Tomato</option><option>Brinjal</option><option>Chilli</option><option>Mustard</option></select></div>
+        <div class="field"><label>Problem description</label><textarea id="ai_problem" placeholder="Describe symptoms in any language..."></textarea></div>
+        <div class="field"><label>Photo upload</label><input id="ai_photo" type="file" accept="image/*"></div>
+        <button class="btn primary" onclick="diagnose()">Analyze</button>
+        <button class="btn ghost" onclick="voiceInput()">🎙 Voice input</button>
+      </div>
+      <div class="card">
+        <div id="aiResult" class="sub">Enter symptoms and get organic recommendations.</div>
+      </div>
+    </div>`;
+}
+function renderChart(series){
+  const ctx = document.getElementById('revenueChart');
+  if(!ctx) return;
+  if(CHART) CHART.destroy();
+  CHART = new Chart(ctx, {
+    type:'line',
+    data:{ labels: series.map(x=>x.month), datasets:[{ label:'Revenue', data: series.map(x=>x.amount), tension:.3, fill:true }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }}, scales:{ y:{ beginAtZero:true } } }
+  });
+}
+function forecastRevenue(series){
+  if(!series || !series.length) return 0;
+  const vals = series.map(x=>Number(x.amount||0));
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return Math.round(avg * 1.12);
+}
+function refreshDashboard(){
+  google.script.run.withSuccessHandler(data => {
+    BOOT.dashboard = data.dashboard;
+    document.getElementById('kpiProducts').textContent = data.publicStats?.productsCount || PRODUCTS.length;
+    document.getElementById('kpiOrders').textContent = data.publicStats?.ordersCount || 0;
+    document.getElementById('kpiRevenue').textContent = money(data.publicStats?.revenue || 0);
+    document.getElementById('kpiCash').textContent = money(data.publicStats?.cashInHand || 0);
+    document.getElementById('topProduct').textContent = data.dashboard?.topProduct?.name ? `${data.dashboard.topProduct.name} (${data.dashboard.topProduct.qty})` : '—';
+    renderChart(data.dashboard?.monthly || []);
+    toast('Dashboard updated');
+  }).apiBootstrap();
+}
+function submitOrder(){
+  if(!STATE.cart.length) return toast('Cart empty');
+  const subtotal = STATE.cart.reduce((s,i)=>s + Number(i.qty)*Number(i.price),0);
+  const payload = {
+    items: STATE.cart,
+    customer: {
+      name: value('o_name'), phone: value('o_phone'), email: value('o_email'),
+      address: value('o_address'), city: value('o_city'), state: value('o_state')
+    },
+    paymentMode: value('o_payment'),
+    paymentStatus: value('o_ref') ? 'PAID' : 'PENDING',
+    transactionRef: value('o_ref'),
+    notes: value('o_notes'),
+    source: 'website',
+    discount: 0,
+    delivery: 0,
+    tax: 0
+  };
+  google.script.run.withSuccessHandler(res => {
+    CURRENT.order = res.order;
+    localStorage.setItem('cart', JSON.stringify([]));
+    STATE.cart = [];
+    toast('Order saved successfully');
+    renderInvoice(res.order);
+    openInvoiceModal(res.order);
+    refreshDashboard();
+    clearOrderForm();
+  }).withFailureHandler(err => toast(err.message || err)).apiSaveOrder(payload);
+}
+function submitStudentSale(){
+  if(!STATE.staffToken) return toast('Login student code first');
+  const sku = value('s_product');
+  const p = PRODUCTS.find(x => x.sku === sku);
+  const payload = {
+    staffToken: STATE.staffToken,
+    studentName: 'Authorized student',
+    studentGmail: '',
+    studentPhone: '',
+    buyerName: value('s_buyer'),
+    buyerPhone: value('s_phone'),
+    buyerEmail: value('s_email'),
+    product: p?.nameEn || sku,
+    sku: sku,
+    qty: value('s_qty'),
+    unitPrice: value('s_price'),
+    paymentMode: value('s_payment'),
+    paymentStatus: value('s_ref') ? 'PAID' : 'PENDING',
+    transactionRef: value('s_ref'),
+    notes: value('s_notes')
+  };
+  google.script.run.withSuccessHandler(res => {
+    toast('Student sale saved');
+    document.getElementById('studentStatus').textContent = 'Saved successfully.';
+    refreshDashboard();
+    clearStudentForm();
+  }).withFailureHandler(err => toast(err.message || err)).apiSaveStudentSale(payload);
+}
+function loginAdmin(){
+  google.script.run.withSuccessHandler(res => {
+    STATE.adminToken = res.token;
+    localStorage.setItem('adminToken', res.token);
+    document.getElementById('adminStatus').textContent = 'Admin login successful.';
+    toast('Admin logged in');
+    openAdminArea();
+  }).withFailureHandler(err => toast(err.message || err)).apiLoginAdmin(value('adminPin'));
+}
+function loginStudent(){
+  google.script.run.withSuccessHandler(res => {
+    STATE.staffToken = res.token;
+    localStorage.setItem('staffToken', res.token);
+    document.getElementById('studentStatus').textContent = `Logged in as ${res.staff.name}`;
+    fillPrice();
+    toast('Student code accepted');
+  }).withFailureHandler(err => toast(err.message || err)).apiLoginStaff(value('s_code'));
+}
+function openAdminArea(){
+  document.getElementById('adminArea').classList.remove('hide');
+  document.getElementById('adminArea').innerHTML = `
+    <div class="tabs">
+      <button class="active" onclick="switchAdminTab('products')">Products</button>
+      <button onclick="switchAdminTab('expenses')">Expenses</button>
+      <button onclick="switchAdminTab('staff')">Staff</button>
+      <button onclick="switchAdminTab('settings')">Settings</button>
+      <button onclick="switchAdminTab('orders')">Orders</button>
+    </div>
+    <div id="adminTabContent"></div>`;
+  switchAdminTab('products');
+}
+function switchAdminTab(tab){
+  const c = document.getElementById('adminTabContent');
+  if(tab === 'products') c.innerHTML = productsAdminHTML();
+  if(tab === 'expenses') c.innerHTML = expensesHTML();
+  if(tab === 'staff') c.innerHTML = staffHTML();
+  if(tab === 'settings') c.innerHTML = settingsHTML();
+  if(tab === 'orders') c.innerHTML = ordersHTML();
+}
+function ordersHTML(){
+  const d = BOOT?.dashboard || {};
+  const rows = (d.recentOrders || []).map(o=>`<tr><td>${escapeHtml(o.invoiceNo)}</td><td>${escapeHtml(o.customer.name)}</td><td>${escapeHtml(o.customer.phone)}</td><td>${money(o.grandTotal)}</td><td>${escapeHtml(o.paymentStatus)}</td></tr>`).join('');
+  return `<div class="card"><h4>Recent orders</h4><table class="table"><tr><th>Invoice</th><th>Name</th><th>Phone</th><th>Total</th><th>Status</th></tr>${rows || '<tr><td colspan="5">No orders yet</td></tr>'}</table></div>`;
+}
+function saveProduct(sku){
+  const p = PRODUCTS.find(x=>x.sku===sku);
+  const payload = {
+    sku: p.sku, nameEn: p.nameEn, nameHi: p.nameHi, category: p.category, unit: p.unit,
+    price: value('price_' + sku), stock: value('stock_' + sku), active: true, description: p.description, image: p.image
+  };
+  google.script.run.withSuccessHandler(()=>{toast('Product saved'); refreshBootstrap();}).withFailureHandler(err => toast(err.message || err)).apiSaveProduct(payload, STATE.adminToken);
+}
+function saveExpense(){
+  const payload = { category: value('e_cat'), amount: value('e_amt'), paidTo: value('e_to'), purpose: value('e_purpose'), paymentMode: value('e_mode') };
+  google.script.run.withSuccessHandler(()=>{toast('Expense saved'); refreshBootstrap();}).withFailureHandler(err => toast(err.message || err)).apiSaveExpense(payload, STATE.adminToken);
+}
+function saveStaff(){
+  const payload = { code: value('st_code'), name: value('st_name'), role: value('st_role'), allowed: document.getElementById('st_allowed').checked, notes: value('st_notes') };
+  google.script.run.withSuccessHandler(()=>{toast('Staff saved'); refreshBootstrap();}).withFailureHandler(err => toast(err.message || err)).apiSaveStaff(payload, STATE.adminToken);
+}
+function saveSettings(){
+  const payload = {
+    ADMIN_EMAIL: value('set_adminEmail'),
+    ADMIN_PHONE: value('set_adminPhone'),
+    UPI_ID: value('set_upiId'),
+    ADMIN_PIN: value('set_adminPin') || undefined,
+    WHATSAPP_API_URL: value('set_waUrl'),
+    WHATSAPP_TOKEN: value('set_waToken'),
+    SMS_API_URL: value('set_smsUrl'),
+    SMS_TOKEN: value('set_smsToken')
+  };
+  google.script.run.withSuccessHandler(()=>{toast('Settings saved'); refreshBootstrap();}).withFailureHandler(err => toast(err.message || err)).apiSaveSettings(payload, STATE.adminToken);
+}
+function saveExpenseQuick(amount, category){
+  document.getElementById('e_amt').value = amount;
+  document.getElementById('e_cat').value = category;
+}
+function value(id){ const el = document.getElementById(id); return el ? el.value : ''; }
+function clearOrderForm(){
+  ['o_name','o_phone','o_email','o_address','o_city','o_state','o_ref','o_notes'].forEach(id => document.getElementById(id) && (document.getElementById(id).value = ''));
+}
+function clearStudentForm(){
+  ['s_buyer','s_phone','s_email','s_ref','s_notes'].forEach(id => document.getElementById(id) && (document.getElementById(id).value = ''));
+}
+function updateQty(idx, qty){ STATE.cart[idx].qty = Number(qty); localStorage.setItem('cart', JSON.stringify(STATE.cart)); openDrawer('order'); }
+function removeItem(idx){ STATE.cart.splice(idx,1); localStorage.setItem('cart', JSON.stringify(STATE.cart)); openDrawer('order'); }
+function fillPrice(){ const p = PRODUCTS.find(x=>x.sku===value('s_product')); if(p) document.getElementById('s_price').value = p.price; }
+function copyShareLink(){
+  const url = document.getElementById('shareUrl').value || '';
+  navigator.clipboard.writeText(url).then(()=>toast('Link copied'));
+}
+function makeQr(){
+  const url = document.getElementById('shareUrl').value || '';
+  const box = document.getElementById('qrBox') || document.getElementById('qrBox2');
+  if(!url) return toast('Paste your web app URL first');
+  box.innerHTML = '';
+  new QRCode(box, { text: url, width: 180, height: 180 });
+}
+function downloadPdfPreview(){
+  const payload = {
+    invoiceNo: 'PREVIEW-' + Date.now(),
+    timestamp: new Date().toString(),
+    customer: {
+      name: value('o_name'), phone: value('o_phone'), email: value('o_email'),
+      address: value('o_address'), city: value('o_city'), state: value('o_state')
+    },
+    items: STATE.cart,
+    subtotal: STATE.cart.reduce((s,i)=>s + Number(i.qty)*Number(i.price),0),
+    discount: 0, delivery: 0, tax: 0,
+    grandTotal: STATE.cart.reduce((s,i)=>s + Number(i.qty)*Number(i.price),0),
+    paymentMode: value('o_payment'), paymentStatus: value('o_ref') ? 'PAID' : 'PENDING', transactionRef: value('o_ref')
+  };
+  renderInvoice(payload);
+  openInvoiceModal(payload);
+}
+function renderInvoice(order){
+  CURRENT.order = order;
+  const box = document.getElementById('invoiceBox');
+  if(!box) return;
+  const barcodeId = 'barcode_' + Date.now();
+  box.innerHTML = `
+    <div class="invoice">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <h2 style="margin:0">${BOOT?.app?.college || 'College of Agriculture, Balaghat'}</h2>
+          <div class="sub">Organic Commerce Hub</div>
+        </div>
+        <div style="text-align:right">
+          <div><b>Invoice:</b> ${escapeHtml(order.invoiceNo || order.orderNo || '')}</div>
+          <div class="sub">${escapeHtml(order.timestamp || '')}</div>
+        </div>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+      <div class="grid split">
+        <div><b>Buyer</b><div class="sub">${escapeHtml(order.customer?.name || order.buyerName || '')}<br>${escapeHtml(order.customer?.phone || order.buyerPhone || '')}<br>${escapeHtml(order.customer?.email || order.buyerEmail || '')}<br>${escapeHtml(order.customer?.address || '')}</div></div>
+        <div><b>Payment</b><div class="sub">${escapeHtml(order.paymentMode || '')} • ${escapeHtml(order.paymentStatus || '')}<br>${escapeHtml(order.transactionRef || '')}</div></div>
+      </div>
+      <table class="table" id="invTable" style="margin-top:14px">
+        <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        ${(order.items || []).map(it=>`<tr><td>${escapeHtml(it.name)}</td><td>${it.qty}</td><td>${money(it.price)}</td><td>${money(Number(it.qty)*Number(it.price))}</td></tr>`).join('')}
+      </table>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <div style="min-width:240px">
+          <div class="row" style="justify-content:space-between"><span>Subtotal</span><b>${money(order.subtotal || 0)}</b></div>
+          <div class="row" style="justify-content:space-between"><span>Discount</span><b>${money(order.discount || 0)}</b></div>
+          <div class="row" style="justify-content:space-between"><span>Delivery</span><b>${money(order.delivery || 0)}</b></div>
+          <div class="row" style="justify-content:space-between"><span>Tax</span><b>${money(order.tax || 0)}</b></div>
+          <div class="row" style="justify-content:space-between;font-size:18px;margin-top:6px"><span>Grand Total</span><b>${money(order.grandTotal || 0)}</b></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:16px;justify-content:space-between;align-items:flex-end">
+        <div><canvas id="${barcodeId}" style="height:40px"></canvas></div>
+        <div style="text-align:right">
+          <div style="font-weight:900">Thank you for supporting student-run organic inputs 🙏</div>
+          <div class="sub">Loyalty points: ${Math.floor((order.grandTotal || 0)/100)}</div>
+        </div>
+      </div>
+    </div>`;
+  try {
+    JsBarcode(`#${barcodeId}`, order.invoiceNo || order.orderNo || 'INV', { displayValue: true, fontSize: 12, height: 40, margin: 2 });
+  } catch(e){}
+}
+function openInvoiceModal(order){
+  const html = `
+    <div class="modal-head"><h3 class="title">Invoice ready</h3><button class="btn ghost" onclick="document.getElementById('overlay').classList.remove('show')">✕</button></div>
+    <div id="invoiceBox"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" onclick="generatePdf()">Download PDF</button>
+      <button class="btn ghost" onclick="window.print()">Print</button>
+      <button class="btn ghost" onclick="openDrawer('link')">UPI QR</button>
+    </div>`;
+  document.getElementById('modal').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+  renderInvoice(order);
+}
+function generatePdf(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const order = CURRENT.order;
+  let y = 38;
+  doc.setFontSize(17); doc.text((BOOT?.app?.college || 'College of Agriculture, Balaghat'), 40, y); y += 16;
+  doc.setFontSize(11); doc.text('Organic Commerce Hub', 40, y); y += 20;
+  doc.setFontSize(10); doc.text(`Invoice: ${order.invoiceNo || order.orderNo || ''}`, 40, y); doc.text(`Date: ${order.timestamp || ''}`, 390, y); y += 18;
+  doc.text(`Buyer: ${order.customer?.name || order.buyerName || ''}`, 40, y); y += 14;
+  doc.text(`Phone: ${order.customer?.phone || order.buyerPhone || ''}`, 40, y); y += 14;
+  doc.text(`Email: ${order.customer?.email || order.buyerEmail || ''}`, 40, y); y += 14;
+  const items = order.items || [];
+  y += 8;
+  doc.setFontSize(10);
+  items.forEach((it, i) => {
+    doc.text(`${i+1}. ${it.name} x ${it.qty}  @ ${money(it.price)} = ${money(Number(it.qty)*Number(it.price))}`, 40, y);
+    y += 14;
+    if (y > 740) { doc.addPage(); y = 40; }
+  });
+  y += 8;
+  doc.text(`Subtotal: ${money(order.subtotal || 0)}`, 40, y); y += 14;
+  doc.text(`Discount: ${money(order.discount || 0)}`, 40, y); y += 14;
+  doc.text(`Delivery: ${money(order.delivery || 0)}`, 40, y); y += 14;
+  doc.text(`Tax: ${money(order.tax || 0)}`, 40, y); y += 14;
+  doc.setFontSize(12); doc.text(`Grand Total: ${money(order.grandTotal || 0)}`, 40, y); y += 24;
+  doc.setFontSize(10); doc.text('Thank you for supporting student-run organic inputs.', 40, y);
+  doc.save((order.invoiceNo || order.orderNo || 'invoice') + '.pdf');
+}
+function diagnose(){
+  const problem = value('ai_problem').toLowerCase();
+  const crop = value('ai_crop');
+  const result = matchDiagnosis(problem, crop);
+  document.getElementById('aiResult').innerHTML = `
+    <div style="font-size:20px;font-weight:900;margin-bottom:8px">${escapeHtml(result.title)}</div>
+    <div class="sub"><b>Confidence:</b> ${result.score}%</div>
+    <div style="margin-top:10px"><b>Likely cause:</b> ${escapeHtml(result.cause)}</div>
+    <div style="margin-top:10px"><b>Organic action:</b><br>${escapeHtml(result.action)}</div>
+    <div style="margin-top:10px"><b>Recommended product:</b> ${escapeHtml(result.product)}</div>
+    <div style="margin-top:10px" class="sub">Photo upload is stored locally in the browser here; for true vision AI, connect a computer-vision API later.</div>
+  `;
+}
+function matchDiagnosis(problem, crop){
+  const rules = [
+    { keys:['yellow','blotch','fung'], title:'Likely fungal leaf spot', cause:'Moist canopy + poor airflow', action:'Spray Panchparni or Dashparni at 5 ml/L and repeat after 7 days. Improve spacing and remove infected leaves.', product:'Panchparni / Dashparni', score:88 },
+    { keys:['aphid','whitefly','jassid','sucking'], title:'Sucking pest attack', cause:'Population buildup in warm weather', action:'Use Neemastra first. For heavy attack, use Brahmastra or Agniastra according to severity.', product:'Neemastra', score:90 },
+    { keys:['borer','caterpillar','leaf folder'], title:'Chewing pest damage', cause:'Larval infestation', action:'Use Agniastra in the evening; repeat after 5–7 days. Monitor trap catches.', product:'Agniastra', score:92 },
+    { keys:['seed','germination','damping'], title:'Seed / seedling problem', cause:'Poor seed treatment or soil fungi', action:'Treat seed with Beejamrit; improve drainage and sow healthy seed.', product:'Beejamrit', score:86 },
+    { keys:['stunt','weak','growth','yellowing'], title:'Nutrient deficiency / poor soil biology', cause:'Low microbial activity or nutrient imbalance', action:'Apply Jeevamrit or Amrit Pani and topdress with Vermicompost.', product:'Jeevamrit + Vermicompost', score:84 }
+  ];
+  const hit = rules.find(r => r.keys.some(k => problem.includes(k)));
+  return hit || { title:`General crop advisory for ${crop}`, cause:'Need more symptom details', action:'Share clear symptoms, leaf close-up, stem, and root stage. Start with Jeevamrit and Vermicompost for soil health.', product:'AI Doctor / Crop guide', score:67 };
+}
+function voiceInput(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return toast('Voice input not supported in this browser');
+  const rec = new SR();
+  rec.lang = STATE.lang === 'hi' ? 'hi-IN' : 'en-IN';
+  rec.onresult = e => {
+    const txt = e.results[0][0].transcript;
+    const box = document.getElementById('ai_problem');
+    if(box) box.value = txt;
+    toast('Voice captured');
+  };
+  rec.start();
+}
+function refreshBootstrap(){ google.script.run.withSuccessHandler(data => { BOOT = data; PRODUCTS = data.products || []; fillCategories(); renderProducts(); refreshDashboard(); }).apiBootstrap(); }
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2200); }
+function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+document.getElementById('overlay').addEventListener('click', closeOverlay);
+boot();
+fillPrice();
+</script>
+</body>
+</html>
